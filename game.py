@@ -117,6 +117,9 @@ class GameState(GameBoard):
     def Get_parent(self):
         return self.parent
     
+    def Clear_children(self):
+        self.children = []
+
     def Set_parent(self,new_parent):
         self.parent = new_parent
     
@@ -286,27 +289,51 @@ class Minimax():
 class Alpha_Beta():
     def __init__(self, root=None):
         self.root = root
-    
+        """ 
         if self.root is not None:
             alpha = float('-inf')
             beta = float('inf')
             best_val = self.root.Evaluate_AB(alpha,beta)
             for child in self.root.Get_children():
                 if child.Get_value() == best_val:
-                    child.Print_board()
+                    #child.Print_board()
+                    return child
                     break
-
-
+        """         
+    def Update_state(self,new_state):
+        self.root = new_state
+        
+    def Gen_next_move(self):
+        if self.root is not None:
+            alpha = float('-inf')
+            beta = float('inf')
+            best_val = self.root.Evaluate_AB(alpha,beta)
+            for child in self.root.Get_children():
+                if child.Get_value() == best_val:
+                #child.Print_board()
+                    return child
+                    break
+            
 gstate = GameState()
 gstate.Place_move([1,1],'x')
-gstate.Place_move([0,1],'o')
-gstate.Place_move([1,0],'x')
-gstate.Place_move([1,2],'o')
-gstate.Place_move([2,0],'x')
-gstate.Place_move([0,2],'o')
-gstate.Place_move([2,2],'x')
 gstate.Print_board()
 gstate.Set_player_turn('o')
 a_b_test = Alpha_Beta(gstate)
 
+gstate = a_b_test.Gen_next_move()
+gstate.Print_board()
+gstate.Clear_children()
+while gstate.Get_game_over() is False:
+    # player move
+    player_move = input()
+    player_move = player_move.strip().split(",")
+    player_move = [int(player_move[0]), int(player_move[1])]
+    gstate.Place_move(player_move, 'x')
+    gstate.Set_player_turn('o')
+    gstate.Clear_children()
+    if gstate.Get_game_over() is False:
+        a_b_test.Update_state(gstate)
+        gstate = a_b_test.Gen_next_move()
+        gstate.Print_board()
+        gstate.Set_player_turn('x')
 
