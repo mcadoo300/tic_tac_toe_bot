@@ -3,6 +3,8 @@ import cProfile
 import pstats
 
 
+node_count = 0
+
 class GameBoard:
     def __init__(self, board = [[' ' for _ in range(3)] for _ in range(3)], game_over = False, winner = None):
         self.board = board
@@ -139,6 +141,10 @@ class GameState(GameBoard):
         self.player_turn = new_player_turn
     
     def Evaluate_AB(self,alpha,beta):
+        
+        global node_count
+        node_count += 1
+        print(node_count)
         if self.Get_game_over():
             if self.winner == 'o':
                 self.value = 1
@@ -187,13 +193,11 @@ class GameState(GameBoard):
                             beta = min(min_val,beta)
                 return min_val
                             
-
-
-
-
-
     
     def Evaluate_mini_max(self):
+        global node_count
+        node_count +=1 
+        print(node_count)
         if self.game_over:
             if self.winner == 'o':
                 self.value = 1
@@ -314,13 +318,12 @@ class Alpha_Beta():
                     return child
                     break
             
+
+
 gstate = GameState()
-gstate.Place_move([1,1],'x')
-gstate.Print_board()
-gstate.Set_player_turn('o')
+gstate.Set_player_turn('x')
 a_b_test = Alpha_Beta(gstate)
 
-gstate = a_b_test.Gen_next_move()
 gstate.Print_board()
 gstate.Clear_children()
 while gstate.Get_game_over() is False:
@@ -331,9 +334,31 @@ while gstate.Get_game_over() is False:
     gstate.Place_move(player_move, 'x')
     gstate.Set_player_turn('o')
     gstate.Clear_children()
+    gstate.Print_board()
+    print('\n')
     if gstate.Get_game_over() is False:
         a_b_test.Update_state(gstate)
         gstate = a_b_test.Gen_next_move()
         gstate.Print_board()
+        print('\n')
         gstate.Set_player_turn('x')
 
+node_count = 0
+gstate2 = GameState()
+gstate2.Set_player_turn('x')
+gstate2.Print_board()
+mini_max = Minimax(gstate2,'o')
+mini_max.Build_tree()
+while gstate2.Get_game_over() is False:
+    player_move = input()
+    player_move = player_move.strip().split(",")
+    player_move = [int(player_move[0]), int(player_move[1])]
+    gstate2.Place_move(player_move, 'x')
+    gstate2.Set_player_turn('o')
+    gstate2.Print_board()
+    print('\n')
+    if gstate2.Get_game_over() is False:
+        mini_max.Update_state(gstate2)
+        gstate2 = mini_max.Get_next_move()
+        gstate2.Print_board()
+        print('\n') 
