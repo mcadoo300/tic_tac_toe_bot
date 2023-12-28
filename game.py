@@ -143,8 +143,8 @@ class GameState(GameBoard):
     def Evaluate_AB(self,alpha,beta):
         
         global node_count
-        node_count += 1
-        print(node_count)
+        #node_count += 1
+        #print(node_count)
         if self.Get_game_over():
             if self.winner == 'o':
                 self.value = 1
@@ -152,7 +152,7 @@ class GameState(GameBoard):
                 self.value = -1
             else:
                 self.value = 0
-            return self.value
+            return self.value, None
         else:
             if self.player_turn == 'x':
                 next_player_turn = 'o'
@@ -161,6 +161,7 @@ class GameState(GameBoard):
             potential_moves = self.Generate_next_moves()
             if self.player_turn == 'o': #maximize
                 max_val = float('-inf')
+                best_move = None
                 for move in potential_moves:
                     new_state = GameState()
                     new_state.Set_board(copy.deepcopy(self.Get_board()))
@@ -169,15 +170,18 @@ class GameState(GameBoard):
                     new_state.Place_move(move, self.player_turn)
                     new_child_flag = self.Add_child(new_state)
                     if new_child_flag:
-                            max_val = max(max_val,new_state.Evaluate_AB(alpha,beta))
+                            max_val = max(max_val,new_state.Evaluate_AB(alpha,beta)[0])
                             self.value = max_val
                             if max_val >= beta:
                                 self.value = beta
                                 break
+                            if max_val > alpha:
+                                best_move = move
                             alpha = max(max_val,alpha)
-                return max_val
+                return max_val, best_move
             else:
                 min_val = float('inf')
+                best_move = None
                 for move in potential_moves:
                     new_state = GameState()
                     new_state.Set_board(copy.deepcopy(self.Get_board()))
@@ -186,12 +190,15 @@ class GameState(GameBoard):
                     new_state.Place_move(move, self.player_turn)
                     new_child_flag = self.Add_child(new_state)
                     if new_child_flag:
-                            min_val = min(min_val,new_state.Evaluate_AB(alpha,beta))
+                            min_val = min(min_val,new_state.Evaluate_AB(alpha,beta)[0])
                             self.value = min_val
                             if min_val <= alpha:
                                 break
+
+                            if min_val < beta:
+                                best_move = move
                             beta = min(min_val,beta)
-                return min_val
+                return min_val, best_move
                             
     
     def Evaluate_mini_max(self):
@@ -311,15 +318,17 @@ class Alpha_Beta():
         if self.root is not None:
             alpha = float('-inf')
             beta = float('inf')
-            best_val = self.root.Evaluate_AB(alpha,beta)
-            for child in self.root.Get_children():
+            best_val,best_mv = self.root.Evaluate_AB(alpha,beta)
+            #print(best_mv)
+            return best_mv
+            """for child in self.root.Get_children():
                 if child.Get_value() == best_val:
                 #child.Print_board()
                     return child
-                    break
+                    break"""
             
 
-
+"""
 gstate = GameState()
 gstate.Set_player_turn('x')
 a_b_test = Alpha_Beta(gstate)
@@ -361,4 +370,5 @@ while gstate2.Get_game_over() is False:
         mini_max.Update_state(gstate2)
         gstate2 = mini_max.Get_next_move()
         gstate2.Print_board()
-        print('\n') 
+        print('\n')
+        """
